@@ -13,20 +13,22 @@ const Shop = () => {
   const isRamadanTheme = selectedCategory === "Kaftans";
 
   return (
-    <div className={`min-h-screen py-12 ${isRamadanTheme ? 'bg-gradient-to-br from-purple-900/10 via-background to-amber-900/10' : ''}`}>
+    <div className={`min-h-screen py-12 ${isRamadanTheme ? 'bg-gradient-to-br from-emerald-950/20 via-background to-amber-950/20' : ''}`}>
       <div className="container mx-auto px-4">
         {/* Ramadan Decorative Elements */}
         {isRamadanTheme && (
-          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
-            <div className="absolute top-20 right-10 text-6xl">🌙</div>
-            <div className="absolute top-40 left-10 text-4xl">⭐</div>
-            <div className="absolute bottom-40 right-20 text-5xl">✨</div>
-            <div className="absolute bottom-20 left-20 text-4xl">🌙</div>
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-10">
+            <div className="absolute top-20 right-10 text-7xl">🏮</div>
+            <div className="absolute top-40 left-10 text-5xl">🌙</div>
+            <div className="absolute bottom-40 right-20 text-6xl">🏮</div>
+            <div className="absolute bottom-20 left-20 text-5xl">⭐</div>
+            <div className="absolute top-1/2 left-1/4 text-4xl">✨</div>
+            <div className="absolute top-1/3 right-1/4 text-5xl">🏮</div>
           </div>
         )}
         {/* Header */}
         <div className="text-center mb-12 relative z-10">
-          <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${isRamadanTheme ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-amber-600' : ''}`}>
+          <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${isRamadanTheme ? 'text-transparent bg-clip-text bg-gradient-to-r from-emerald-700 via-amber-600 to-emerald-700' : ''}`}>
             {isRamadanTheme ? 'Ramadan Collection' : 'Shop Collection'}
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -51,7 +53,7 @@ const Shop = () => {
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 relative z-10">
           {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product.id} product={product} isRamadan={isRamadanTheme} />
           ))}
         </div>
 
