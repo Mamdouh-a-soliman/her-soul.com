@@ -10,19 +10,32 @@ const Shop = () => {
     ? products
     : products.filter((product) => product.category === selectedCategory);
 
+  const isRamadanTheme = selectedCategory === "Kaftans";
+
   return (
-    <div className="min-h-screen py-12">
+    <div className={`min-h-screen py-12 ${isRamadanTheme ? 'bg-gradient-to-br from-purple-900/10 via-background to-amber-900/10' : ''}`}>
       <div className="container mx-auto px-4">
+        {/* Ramadan Decorative Elements */}
+        {isRamadanTheme && (
+          <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-20">
+            <div className="absolute top-20 right-10 text-6xl">🌙</div>
+            <div className="absolute top-40 left-10 text-4xl">⭐</div>
+            <div className="absolute bottom-40 right-20 text-5xl">✨</div>
+            <div className="absolute bottom-20 left-20 text-4xl">🌙</div>
+          </div>
+        )}
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Shop Collection</h1>
+        <div className="text-center mb-12 relative z-10">
+          <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${isRamadanTheme ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-amber-600' : ''}`}>
+            {isRamadanTheme ? 'Ramadan Collection' : 'Shop Collection'}
+          </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Explore our curated selection of modern casual wear
+            {isRamadanTheme ? 'Elegant kaftans for blessed Ramadan celebrations' : 'Explore our curated selection of modern casual wear'}
           </p>
         </div>
 
         {/* Category Filter */}
-        <div className="flex flex-wrap gap-3 justify-center mb-12">
+        <div className="flex flex-wrap gap-3 justify-center mb-12 relative z-10">
           {categories.map((category) => (
             <Button
               key={category}
@@ -36,7 +49,7 @@ const Shop = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 relative z-10">
           {filteredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

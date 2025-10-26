@@ -34,11 +34,11 @@ export interface Product {
 export const products: Product[] = [
   {
     id: 1,
-    name: "Elegant Casual Ensemble",
-    category: "Sets",
+    name: "Elegant Kaftan Ensemble",
+    category: "Kaftans",
     price: 749,
     images: [product16, product21, product22, product23],
-    description: "Sophisticated casual wear perfect for any occasion. This versatile ensemble combines comfort with modern elegance."
+    description: "Elegant kaftan perfect for special occasions and Ramadan celebrations. This versatile ensemble combines modesty with modern elegance."
   },
   {
     id: 2,
@@ -74,4 +74,4 @@ export const products: Product[] = [
   }
 ];
 
-export const categories = ["All", "Sets"];
+export const categories = ["All", "Kaftans", "Sets"];
