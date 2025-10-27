@@ -1,10 +1,14 @@
 import { Link, useLocation } from "react-router-dom";
-import { Menu, X, ShoppingBag } from "lucide-react";
+import { Menu, X, ShoppingBag, LogIn, LogOut, Shield } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCart } from "@/contexts/CartContext";
 export const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const { user, isAdmin, signOut } = useAuth();
+  const { itemCount } = useCart();
 
   const navLinks = [
     { name: "Home", path: "/" },
@@ -38,9 +42,37 @@ export const Navigation = () => {
                 {link.name}
               </Link>
             ))}
-            <Button variant="outline" size="icon" className="relative">
-              <ShoppingBag className="h-5 w-5" />
-            </Button>
+            {isAdmin && (
+              <Link to="/admin">
+                <Button variant="outline" size="sm">
+                  <Shield className="mr-2 h-4 w-4" />
+                  Admin
+                </Button>
+              </Link>
+            )}
+            <Link to="/cart">
+              <Button variant="outline" size="icon" className="relative">
+                <ShoppingBag className="h-5 w-5" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
+              </Button>
+            </Link>
+            {user ? (
+              <Button variant="ghost" size="sm" onClick={signOut}>
+                <LogOut className="mr-2 h-4 w-4" />
+                Logout
+              </Button>
+            ) : (
+              <Link to="/auth">
+                <Button variant="ghost" size="sm">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Button>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -54,7 +86,7 @@ export const Navigation = () => {
 
         {/* Mobile Navigation */}
         {isOpen && (
-          <div className="md:hidden pb-4 animate-fade-in">
+          <div className="md:hidden pb-4 animate-fade-in space-y-2">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -67,6 +99,39 @@ export const Navigation = () => {
                 {link.name}
               </Link>
             ))}
+            {isAdmin && (
+              <Link to="/admin" onClick={() => setIsOpen(false)}>
+                <div className="py-2 text-sm font-medium text-foreground hover:text-primary">
+                  <Shield className="inline mr-2 h-4 w-4" />
+                  Admin
+                </div>
+              </Link>
+            )}
+            <Link to="/cart" onClick={() => setIsOpen(false)}>
+              <div className="py-2 text-sm font-medium text-foreground hover:text-primary">
+                <ShoppingBag className="inline mr-2 h-4 w-4" />
+                Cart {itemCount > 0 && `(${itemCount})`}
+              </div>
+            </Link>
+            {user ? (
+              <button
+                onClick={() => {
+                  signOut();
+                  setIsOpen(false);
+                }}
+                className="py-2 text-sm font-medium text-foreground hover:text-primary w-full text-left"
+              >
+                <LogOut className="inline mr-2 h-4 w-4" />
+                Logout
+              </button>
+            ) : (
+              <Link to="/auth" onClick={() => setIsOpen(false)}>
+                <div className="py-2 text-sm font-medium text-foreground hover:text-primary">
+                  <LogIn className="inline mr-2 h-4 w-4" />
+                  Login
+                </div>
+              </Link>
+            )}
           </div>
         )}
       </div>

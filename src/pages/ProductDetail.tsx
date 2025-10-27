@@ -1,11 +1,22 @@
 import { useParams, Link } from "react-router-dom";
-import { products } from "@/data/products";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ShoppingBag, Heart } from "lucide-react";
 import { ProductCard } from "@/components/ProductCard";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/lib/supabase";
+import { useCart } from "@/contexts/CartContext";
+
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  description: string;
+  main_image: string;
+  images: string[];
+}
 import {
   Carousel,
   CarouselContent,
@@ -17,25 +28,55 @@ import {
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const product = products.find((p) => p.id === Number(id));
   const isMobile = useIsMobile();
-  
-  // Set initial image based on product
-  const getInitialImage = () => {
-    if (!product) return 0;
-    // Product 1 (Elegant Casual Ensemble) - start with second image
-    if (product.id === 1) return 1;
-    // Product 5 (Versatile Style Set) - no initial selection (will show first but indicate none selected)
-    return 0;
-  };
-  
-  const [selectedImage, setSelectedImage] = useState(getInitialImage());
+  const { addToCart } = useCart();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(0);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>();
 
   useEffect(() => {
+    if (id) {
+      fetchProduct(id);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setSelectedImage(getInitialImage());
   }, [id]);
+
+  const fetchProduct = async (productId: string) => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", productId)
+      .single();
+
+    if (error) {
+      console.error("Error fetching product:", error);
+      setProduct(null);
+    } else {
+      setProduct(data);
+      if (data) {
+        fetchRelatedProducts(data.category, productId);
+      }
+    }
+    setLoading(false);
+  };
+
+  const fetchRelatedProducts = async (category: string, currentId: string) => {
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("category", category)
+      .neq("id", currentId)
+      .limit(4);
+
+    if (error) {
+      console.error("Error fetching related products:", error);
+    } else {
+      setRelatedProducts(data || []);
+    }
+  };
 
   useEffect(() => {
     if (!carouselApi) return;
@@ -44,6 +85,14 @@ const ProductDetail = () => {
       setSelectedImage(carouselApi.selectedScrollSnap());
     });
   }, [carouselApi]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg">Loading product...</p>
+      </div>
+    );
+  }
 
   if (!product) {
     return (
@@ -58,11 +107,15 @@ const ProductDetail = () => {
     );
   }
 
-  const relatedProducts = products
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  const productImages = product.images.length > 0 ? product.images : [product.main_image];
 
   const handleAddToCart = () => {
+    addToCart({
+      id: product.id,
+      name: product.name,
+      price: Number(product.price),
+      image: product.main_image,
+    });
     toast.success("Added to cart!", {
       description: `${product.name} has been added to your cart.`
     });
@@ -84,9 +137,9 @@ const ProductDetail = () => {
           {/* Product Images */}
           <div className="flex flex-col md:flex-row gap-4">
             {/* Thumbnails - Left side on desktop, horizontal scroll on mobile */}
-            {product.images.length > 1 && (
+            {productImages.length > 1 && (
               <div className="flex md:flex-col gap-2 overflow-x-auto md:overflow-visible order-2 md:order-1">
-                {product.images.map((image, index) => (
+                {productImages.map((image, index) => (
                   <button
                     key={index}
                     onClick={() => {
@@ -116,7 +169,7 @@ const ProductDetail = () => {
               {isMobile ? (
                 <Carousel className="w-full" setApi={setCarouselApi}>
                   <CarouselContent className="-ml-2 md:-ml-4">
-                    {product.images.map((image, index) => (
+                    {productImages.map((image, index) => (
                       <CarouselItem key={index} className="pl-2 md:pl-4">
                         <div className="w-full rounded-lg bg-muted shadow-elegant h-[60vh] flex items-center justify-center overflow-hidden transition-transform duration-300">
                           <img
@@ -135,7 +188,7 @@ const ProductDetail = () => {
               ) : (
                 <div className="max-w-md w-full mx-auto rounded-lg bg-muted shadow-elegant h-auto aspect-[3/4] flex items-center justify-center overflow-hidden group cursor-zoom-in">
                   <img
-                    src={product.images[selectedImage]}
+                    src={productImages[selectedImage]}
                     alt={product.name}
                     className="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-110"
                   />
@@ -148,7 +201,7 @@ const ProductDetail = () => {
           <div className="flex flex-col justify-center">
             <p className="text-sm text-muted-foreground mb-2">{product.category}</p>
             <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
-            <p className="text-3xl font-bold text-primary mb-6">£{product.price}</p>
+            <p className="text-3xl font-bold text-primary mb-6">{product.price} SAR</p>
             <p className="text-lg text-muted-foreground mb-8">{product.description}</p>
 
             {/* Action Buttons */}
@@ -185,8 +238,18 @@ const ProductDetail = () => {
           <div>
             <h2 className="text-3xl font-bold mb-8 text-center">You May Also Like</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {relatedProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
+              {relatedProducts.map((relatedProduct) => (
+                <ProductCard 
+                  key={relatedProduct.id} 
+                  product={{
+                    id: Number(relatedProduct.id),
+                    name: relatedProduct.name,
+                    category: relatedProduct.category,
+                    price: Number(relatedProduct.price),
+                    images: relatedProduct.images.length > 0 ? relatedProduct.images : [relatedProduct.main_image],
+                    description: relatedProduct.description,
+                  }}
+                />
               ))}
             </div>
           </div>

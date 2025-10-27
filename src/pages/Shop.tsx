@@ -1,10 +1,42 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProductCard } from "@/components/ProductCard";
-import { products, categories } from "@/data/products";
+import { categories } from "@/data/products";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/lib/supabase";
+
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  description: string;
+  main_image: string;
+  images: string[];
+}
 
 const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching products:", error);
+    } else {
+      setProducts(data || []);
+    }
+    setLoading(false);
+  };
 
   const filteredProducts = selectedCategory === "All"
     ? products
@@ -49,19 +81,38 @@ const Shop = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 relative z-10">
-          {filteredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-
-        {/* No Results */}
-        {filteredProducts.length === 0 && (
+        {loading ? (
           <div className="text-center py-16">
-            <p className="text-lg text-muted-foreground">
-              No products found in this category
-            </p>
+            <p className="text-lg text-muted-foreground">Loading products...</p>
           </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 relative z-10">
+              {filteredProducts.map((product) => (
+                <ProductCard 
+                  key={product.id} 
+                  product={{
+                    id: Number(product.id),
+                    name: product.name,
+                    category: product.category,
+                    price: Number(product.price),
+                    images: product.images.length > 0 ? product.images : [product.main_image],
+                    description: product.description,
+                  }} 
+                  isRamadan={isRamadanTheme}
+                />
+              ))}
+            </div>
+
+            {/* No Results */}
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-16">
+                <p className="text-lg text-muted-foreground">
+                  No products found in this category
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
