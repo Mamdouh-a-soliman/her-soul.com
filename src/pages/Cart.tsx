@@ -108,7 +108,7 @@ export default function Cart() {
                     />
                     <div className="flex-1">
                       <h3 className="font-semibold text-lg">{item.name}</h3>
-                      <p className="text-lg font-bold mt-1">{item.price} SAR</p>
+                      <p className="text-lg font-bold mt-1">{item.price} LE</p>
                       <div className="flex items-center gap-2 mt-4">
                         <Button
                           variant="outline"
@@ -149,7 +149,7 @@ export default function Cart() {
               <CardContent className="space-y-4">
                 <div className="flex justify-between text-lg font-bold">
                   <span>Total:</span>
-                  <span>{total.toFixed(2)} SAR</span>
+                  <span>{total.toFixed(2)} LE</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Payment Method: Cash on Delivery

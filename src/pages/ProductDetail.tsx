@@ -207,15 +207,15 @@ const ProductDetail = () => {
               {product.discount_price ? (
                 <div className="flex items-center gap-3">
                   <p className="text-2xl text-muted-foreground line-through">
-                    {product.price} SAR
+                    {product.price} LE
                   </p>
                   <p className="text-3xl font-bold text-primary">
-                    {product.discount_price} SAR
+                    {product.discount_price} LE
                   </p>
                 </div>
               ) : (
                 <p className="text-3xl font-bold text-primary">
-                  {product.price} SAR
+                  {product.price} LE
                 </p>
               )}
             </div>
@@ -256,18 +256,19 @@ const ProductDetail = () => {
             <h2 className="text-3xl font-bold mb-8 text-center">You May Also Like</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {relatedProducts.map((relatedProduct) => (
-                <ProductCard 
-                  key={relatedProduct.id} 
-                  product={{
-                    id: Number(relatedProduct.id),
-                    name: relatedProduct.name,
-                    category: relatedProduct.category,
-                    price: Number(relatedProduct.price),
-                    discount_price: relatedProduct.discount_price ? Number(relatedProduct.discount_price) : undefined,
-                    images: relatedProduct.images.length > 0 ? relatedProduct.images : [relatedProduct.main_image],
-                    description: relatedProduct.description,
-                  }}
-                />
+                <Link key={relatedProduct.id} to={`/product/${relatedProduct.id}`}>
+                  <ProductCard 
+                    product={{
+                      id: 0,
+                      name: relatedProduct.name,
+                      category: relatedProduct.category,
+                      price: Number(relatedProduct.price),
+                      discount_price: relatedProduct.discount_price ? Number(relatedProduct.discount_price) : undefined,
+                      images: relatedProduct.images.length > 0 ? relatedProduct.images : [relatedProduct.main_image],
+                      description: relatedProduct.description,
+                    }}
+                  />
+                </Link>
               ))}
             </div>
           </div>

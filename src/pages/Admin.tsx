@@ -302,7 +302,7 @@ export default function Admin() {
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="price">Price (SAR)</Label>
+                        <Label htmlFor="price">Price (LE)</Label>
                         <Input
                           id="price"
                           type="number"
@@ -313,7 +313,7 @@ export default function Admin() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="discount_price">Discount Price (SAR)</Label>
+                        <Label htmlFor="discount_price">Discount Price (LE)</Label>
                         <Input
                           id="discount_price"
                           type="number"
@@ -359,34 +359,59 @@ export default function Admin() {
                     <div>
                       <Label>Main Image</Label>
                       <div className="space-y-2">
-                        <div className="relative">
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full justify-start"
+                              onClick={() => setShowImageDropdown(!showImageDropdown)}
+                            >
+                              {formData.main_image ? "Change Image" : "Select from Gallery"}
+                            </Button>
+                            {showImageDropdown && (
+                              <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                <div className="grid grid-cols-3 gap-2 p-2">
+                                  {availableImages.map((img, idx) => (
+                                    <button
+                                      key={idx}
+                                      type="button"
+                                      onClick={() => {
+                                        setFormData({ ...formData, main_image: img });
+                                        setShowImageDropdown(false);
+                                      }}
+                                      className="border rounded p-1 hover:border-primary transition"
+                                    >
+                                      <img src={img} alt={`Option ${idx + 1}`} className="w-full h-20 object-cover rounded" />
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
                           <Button
                             type="button"
                             variant="outline"
-                            className="w-full justify-start"
-                            onClick={() => setShowImageDropdown(!showImageDropdown)}
+                            onClick={() => document.getElementById('image-upload')?.click()}
                           >
-                            {formData.main_image ? "Change Image" : "Select from Gallery"}
+                            Browse
                           </Button>
-                          {showImageDropdown && (
-                            <div className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                              <div className="grid grid-cols-3 gap-2 p-2">
-                                {availableImages.map((img, idx) => (
-                                  <button
-                                    key={idx}
-                                    type="button"
-                                    onClick={() => {
-                                      setFormData({ ...formData, main_image: img });
-                                      setShowImageDropdown(false);
-                                    }}
-                                    className="border rounded p-1 hover:border-primary transition"
-                                  >
-                                    <img src={img} alt={`Option ${idx + 1}`} className="w-full h-20 object-cover rounded" />
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-                          )}
+                          <input
+                            id="image-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  setFormData({ ...formData, main_image: reader.result as string });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
                         </div>
                         <Input
                           placeholder="Or paste image URL"
@@ -463,11 +488,11 @@ export default function Admin() {
                       <TableCell>
                         {product.discount_price ? (
                           <>
-                            <span className="line-through text-muted-foreground mr-2">{product.price} SAR</span>
-                            <span className="text-primary font-semibold">{product.discount_price} SAR</span>
+                            <span className="line-through text-muted-foreground mr-2">{product.price} LE</span>
+                            <span className="text-primary font-semibold">{product.discount_price} LE</span>
                           </>
                         ) : (
-                          <span>{product.price} SAR</span>
+                          <span>{product.price} LE</span>
                         )}
                       </TableCell>
                       <TableCell>{product.featured ? "⭐" : ""}</TableCell>
@@ -518,7 +543,7 @@ export default function Admin() {
                         </div>
                         <div>
                           <p className="text-sm text-muted-foreground">Order Details</p>
-                          <p className="font-medium">Total: {order.total_amount} SAR</p>
+                          <p className="font-medium">Total: {order.total_amount} LE</p>
                           <p className="text-sm">
                             Date: {new Date(order.created_at).toLocaleDateString()}
                           </p>
@@ -550,7 +575,7 @@ export default function Admin() {
                               <span>
                                 {item.name} x{item.quantity}
                               </span>
-                              <span>{item.price * item.quantity} SAR</span>
+                              <span>{item.price * item.quantity} LE</span>
                             </div>
                           ))}
                         </div>

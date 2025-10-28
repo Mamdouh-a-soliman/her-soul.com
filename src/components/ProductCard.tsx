@@ -44,11 +44,11 @@ export const ProductCard = ({ product, isRamadan = false }: ProductCardProps) =>
         <CardFooter className="p-4 pt-0">
           {hasDiscount ? (
             <div className="flex items-center gap-2">
-              <p className="text-sm text-muted-foreground line-through">{product.price} SAR</p>
-              <p className="text-lg font-bold text-primary">{displayPrice} SAR</p>
+              <p className="text-sm text-muted-foreground line-through">{product.price} LE</p>
+              <p className="text-lg font-bold text-primary">{displayPrice} LE</p>
             </div>
           ) : (
-            <p className="text-lg font-bold text-primary">{product.price} SAR</p>
+            <p className="text-lg font-bold text-primary">{product.price} LE</p>
           )}
         </CardFooter>
       </Card>
