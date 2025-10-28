@@ -9,6 +9,7 @@ interface Product {
   name: string;
   category: string;
   price: number;
+  discount_price?: number;
   description: string;
   main_image: string;
   images: string[];
@@ -96,6 +97,7 @@ const Shop = () => {
                     name: product.name,
                     category: product.category,
                     price: Number(product.price),
+                    discount_price: product.discount_price ? Number(product.discount_price) : undefined,
                     images: product.images.length > 0 ? product.images : [product.main_image],
                     description: product.description,
                   }} 

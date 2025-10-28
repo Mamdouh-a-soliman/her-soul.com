@@ -3,11 +3,14 @@ import { Card, CardContent, CardFooter } from "./ui/card";
 import { Product } from "@/data/products";
 
 interface ProductCardProps {
-  product: Product;
+  product: Product & { discount_price?: number };
   isRamadan?: boolean;
 }
 
 export const ProductCard = ({ product, isRamadan = false }: ProductCardProps) => {
+  const displayPrice = product.discount_price || product.price;
+  const hasDiscount = !!product.discount_price;
+
   return (
     <Link to={`/product/${product.id}`}>
       <Card className={`group overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
@@ -39,7 +42,14 @@ export const ProductCard = ({ product, isRamadan = false }: ProductCardProps) =>
           <h3 className="font-semibold text-base mb-2 line-clamp-1">{product.name}</h3>
         </CardContent>
         <CardFooter className="p-4 pt-0">
-          <p className="text-lg font-bold text-primary">{product.price} SAR</p>
+          {hasDiscount ? (
+            <div className="flex items-center gap-2">
+              <p className="text-sm text-muted-foreground line-through">{product.price} SAR</p>
+              <p className="text-lg font-bold text-primary">{displayPrice} SAR</p>
+            </div>
+          ) : (
+            <p className="text-lg font-bold text-primary">{product.price} SAR</p>
+          )}
         </CardFooter>
       </Card>
     </Link>

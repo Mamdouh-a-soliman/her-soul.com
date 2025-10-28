@@ -13,6 +13,7 @@ interface Product {
   name: string;
   category: string;
   price: number;
+  discount_price?: number;
   description: string;
   main_image: string;
   images: string[];
@@ -110,10 +111,11 @@ const ProductDetail = () => {
   const productImages = product.images.length > 0 ? product.images : [product.main_image];
 
   const handleAddToCart = () => {
+    const displayPrice = product.discount_price || product.price;
     addToCart({
       id: product.id,
       name: product.name,
-      price: Number(product.price),
+      price: Number(displayPrice),
       image: product.main_image,
     });
     toast.success("Added to cart!", {
@@ -201,7 +203,22 @@ const ProductDetail = () => {
           <div className="flex flex-col justify-center">
             <p className="text-sm text-muted-foreground mb-2">{product.category}</p>
             <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
-            <p className="text-3xl font-bold text-primary mb-6">{product.price} SAR</p>
+            <div className="mb-6">
+              {product.discount_price ? (
+                <div className="flex items-center gap-3">
+                  <p className="text-2xl text-muted-foreground line-through">
+                    {product.price} SAR
+                  </p>
+                  <p className="text-3xl font-bold text-primary">
+                    {product.discount_price} SAR
+                  </p>
+                </div>
+              ) : (
+                <p className="text-3xl font-bold text-primary">
+                  {product.price} SAR
+                </p>
+              )}
+            </div>
             <p className="text-lg text-muted-foreground mb-8">{product.description}</p>
 
             {/* Action Buttons */}
@@ -246,6 +263,7 @@ const ProductDetail = () => {
                     name: relatedProduct.name,
                     category: relatedProduct.category,
                     price: Number(relatedProduct.price),
+                    discount_price: relatedProduct.discount_price ? Number(relatedProduct.discount_price) : undefined,
                     images: relatedProduct.images.length > 0 ? relatedProduct.images : [relatedProduct.main_image],
                     description: relatedProduct.description,
                   }}

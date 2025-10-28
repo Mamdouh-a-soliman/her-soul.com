@@ -12,15 +12,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Package } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Product {
   id: string;
   name: string;
   category: string;
   price: number;
+  discount_price?: number;
   description: string;
   main_image: string;
   images: string[];
+  featured?: boolean;
+  sort_order?: number;
 }
 
 interface Order {
@@ -35,6 +39,31 @@ interface Order {
   created_at: string;
 }
 
+const availableImages = [
+  "/src/assets/products/product-1.jpg",
+  "/src/assets/products/product-3.jpg",
+  "/src/assets/products/product-4.jpg",
+  "/src/assets/products/product-5.jpg",
+  "/src/assets/products/product-6.jpg",
+  "/src/assets/products/product-7.jpg",
+  "/src/assets/products/product-8.jpg",
+  "/src/assets/products/product-9.jpg",
+  "/src/assets/products/product-10.jpg",
+  "/src/assets/products/product-11.jpg",
+  "/src/assets/products/product-12.jpg",
+  "/src/assets/products/product-13.jpg",
+  "/src/assets/products/product-14.jpg",
+  "/src/assets/products/product-15.jpg",
+  "/src/assets/products/product-16.jpg",
+  "/src/assets/products/product-17.jpg",
+  "/src/assets/products/product-18.jpg",
+  "/src/assets/products/product-19.jpg",
+  "/src/assets/products/product-20.jpg",
+  "/src/assets/products/product-21.jpg",
+  "/src/assets/products/product-22.jpg",
+  "/src/assets/products/product-23.jpg",
+];
+
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
@@ -43,14 +72,18 @@ export default function Admin() {
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [activeTab, setActiveTab] = useState<"products" | "orders">("products");
+  const [showImageDropdown, setShowImageDropdown] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
     category: "",
     price: "",
+    discount_price: "",
     description: "",
     main_image: "",
     images: "",
+    featured: false,
+    sort_order: 0,
   });
 
   useEffect(() => {
@@ -70,7 +103,7 @@ export default function Admin() {
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("sort_order", { ascending: true });
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -99,9 +132,12 @@ export default function Admin() {
       name: formData.name,
       category: formData.category,
       price: parseFloat(formData.price),
+      discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
       description: formData.description,
       main_image: formData.main_image,
       images: formData.images.split(",").map((url) => url.trim()).filter(Boolean),
+      featured: formData.featured,
+      sort_order: formData.sort_order,
     };
 
     if (editingProduct) {
@@ -149,9 +185,12 @@ export default function Admin() {
       name: product.name,
       category: product.category,
       price: product.price.toString(),
+      discount_price: product.discount_price?.toString() || "",
       description: product.description,
       main_image: product.main_image,
       images: product.images.join(", "),
+      featured: product.featured || false,
+      sort_order: product.sort_order || 0,
     });
     setIsProductDialogOpen(true);
   };
@@ -161,9 +200,12 @@ export default function Admin() {
       name: "",
       category: "",
       price: "",
+      discount_price: "",
       description: "",
       main_image: "",
       images: "",
+      featured: false,
+      sort_order: 0,
     });
     setEditingProduct(null);
     setIsProductDialogOpen(false);
@@ -234,77 +276,152 @@ export default function Admin() {
                       {editingProduct ? "Edit Product" : "Add New Product"}
                     </DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleSubmit} className="space-y-4">
+                  <form onSubmit={handleSubmit} className="space-y-4 pr-2">
                     <div>
                       <Label htmlFor="name">Name</Label>
                       <Input
                         id="name"
                         value={formData.name}
-                        onChange={(e) =>
-                          setFormData({ ...formData, name: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         required
                       />
                     </div>
                     <div>
                       <Label htmlFor="category">Category</Label>
-                      <Input
+                      <select
                         id="category"
                         value={formData.category}
-                        onChange={(e) =>
-                          setFormData({ ...formData, category: e.target.value })
-                        }
-                        placeholder="e.g., Kaftans, Sets"
+                        onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                        className="w-full border rounded-md p-2 bg-background"
                         required
-                      />
+                      >
+                        <option value="">Select category</option>
+                        <option value="Sets">Sets</option>
+                        <option value="Kaftans">Kaftans</option>
+                      </select>
                     </div>
-                    <div>
-                      <Label htmlFor="price">Price (SAR)</Label>
-                      <Input
-                        id="price"
-                        type="number"
-                        step="0.01"
-                        value={formData.price}
-                        onChange={(e) =>
-                          setFormData({ ...formData, price: e.target.value })
-                        }
-                        required
-                      />
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="price">Price (SAR)</Label>
+                        <Input
+                          id="price"
+                          type="number"
+                          step="0.01"
+                          value={formData.price}
+                          onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                          required
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="discount_price">Discount Price (SAR)</Label>
+                        <Input
+                          id="discount_price"
+                          type="number"
+                          step="0.01"
+                          value={formData.discount_price}
+                          onChange={(e) => setFormData({ ...formData, discount_price: e.target.value })}
+                          placeholder="Optional"
+                        />
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="description">Description</Label>
                       <Textarea
                         id="description"
                         value={formData.description}
-                        onChange={(e) =>
-                          setFormData({ ...formData, description: e.target.value })
-                        }
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         rows={3}
                       />
                     </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="featured"
+                          checked={formData.featured}
+                          onCheckedChange={(checked) =>
+                            setFormData({ ...formData, featured: checked as boolean })
+                          }
+                        />
+                        <Label htmlFor="featured">Featured Product</Label>
+                      </div>
+                      <div>
+                        <Label htmlFor="sort_order">Sort Order</Label>
+                        <Input
+                          id="sort_order"
+                          type="number"
+                          value={formData.sort_order}
+                          onChange={(e) =>
+                            setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })
+                          }
+                        />
+                      </div>
+                    </div>
                     <div>
-                      <Label htmlFor="main_image">Main Image URL</Label>
-                      <Input
-                        id="main_image"
-                        value={formData.main_image}
-                        onChange={(e) =>
-                          setFormData({ ...formData, main_image: e.target.value })
-                        }
-                        placeholder="https://example.com/image.jpg"
-                        required
-                      />
+                      <Label>Main Image</Label>
+                      <div className="space-y-2">
+                        <div className="relative">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-start"
+                            onClick={() => setShowImageDropdown(!showImageDropdown)}
+                          >
+                            {formData.main_image ? "Change Image" : "Select from Gallery"}
+                          </Button>
+                          {showImageDropdown && (
+                            <div className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                              <div className="grid grid-cols-3 gap-2 p-2">
+                                {availableImages.map((img, idx) => (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => {
+                                      setFormData({ ...formData, main_image: img });
+                                      setShowImageDropdown(false);
+                                    }}
+                                    className="border rounded p-1 hover:border-primary transition"
+                                  >
+                                    <img src={img} alt={`Option ${idx + 1}`} className="w-full h-20 object-cover rounded" />
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <Input
+                          placeholder="Or paste image URL"
+                          value={formData.main_image}
+                          onChange={(e) => setFormData({ ...formData, main_image: e.target.value })}
+                        />
+                        {formData.main_image && (
+                          <div className="relative w-32 h-32 border rounded">
+                            <img src={formData.main_image} alt="Main" className="w-full h-full object-cover rounded" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div>
                       <Label htmlFor="images">Additional Images (comma-separated URLs)</Label>
                       <Textarea
                         id="images"
                         value={formData.images}
-                        onChange={(e) =>
-                          setFormData({ ...formData, images: e.target.value })
-                        }
-                        placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
-                        rows={3}
+                        onChange={(e) => setFormData({ ...formData, images: e.target.value })}
+                        placeholder="Paste URLs separated by commas, or select from gallery above"
+                        rows={2}
                       />
+                      {formData.images && (
+                        <div className="grid grid-cols-4 gap-2 mt-2">
+                          {formData.images.split(",").map((img, idx) => {
+                            const trimmedImg = img.trim();
+                            if (!trimmedImg) return null;
+                            return (
+                              <div key={idx} className="relative w-20 h-20 border rounded">
+                                <img src={trimmedImg} alt={`Image ${idx + 1}`} className="w-full h-full object-cover rounded" />
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                     <div className="flex gap-2">
                       <Button type="submit">
@@ -326,6 +443,8 @@ export default function Admin() {
                     <TableHead>Name</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Price</TableHead>
+                    <TableHead>Featured</TableHead>
+                    <TableHead>Sort</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -341,7 +460,18 @@ export default function Admin() {
                       </TableCell>
                       <TableCell className="font-medium">{product.name}</TableCell>
                       <TableCell>{product.category}</TableCell>
-                      <TableCell>{product.price} SAR</TableCell>
+                      <TableCell>
+                        {product.discount_price ? (
+                          <>
+                            <span className="line-through text-muted-foreground mr-2">{product.price} SAR</span>
+                            <span className="text-primary font-semibold">{product.discount_price} SAR</span>
+                          </>
+                        ) : (
+                          <span>{product.price} SAR</span>
+                        )}
+                      </TableCell>
+                      <TableCell>{product.featured ? "⭐" : ""}</TableCell>
+                      <TableCell>{product.sort_order}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
                           <Button
