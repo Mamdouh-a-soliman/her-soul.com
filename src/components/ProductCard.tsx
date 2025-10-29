@@ -1,9 +1,18 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "./ui/card";
-import { Product } from "@/data/products";
+
+type MinimalProduct = {
+  id: string | number;
+  name: string;
+  category: string;
+  price: number;
+  discount_price?: number;
+  images: string[];
+  description: string;
+};
 
 interface ProductCardProps {
-  product: Product & { discount_price?: number };
+  product: MinimalProduct;
   isRamadan?: boolean;
 }
 
@@ -12,7 +21,7 @@ export const ProductCard = ({ product, isRamadan = false }: ProductCardProps) =>
   const hasDiscount = !!product.discount_price;
 
   return (
-    <Link to={`/product/${product.id}`}>
+    <Link to={`/product/${String(product.id)}`}>
       <Card className={`group overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
         isRamadan 
           ? 'border-4 border-double border-amber-600/40 bg-gradient-to-br from-emerald-950/5 to-amber-950/5 hover:shadow-[0_0_30px_rgba(217,119,6,0.3)]' 

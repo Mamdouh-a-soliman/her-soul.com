@@ -39,30 +39,9 @@ interface Order {
   created_at: string;
 }
 
-const availableImages = [
-  "/src/assets/products/product-1.jpg",
-  "/src/assets/products/product-3.jpg",
-  "/src/assets/products/product-4.jpg",
-  "/src/assets/products/product-5.jpg",
-  "/src/assets/products/product-6.jpg",
-  "/src/assets/products/product-7.jpg",
-  "/src/assets/products/product-8.jpg",
-  "/src/assets/products/product-9.jpg",
-  "/src/assets/products/product-10.jpg",
-  "/src/assets/products/product-11.jpg",
-  "/src/assets/products/product-12.jpg",
-  "/src/assets/products/product-13.jpg",
-  "/src/assets/products/product-14.jpg",
-  "/src/assets/products/product-15.jpg",
-  "/src/assets/products/product-16.jpg",
-  "/src/assets/products/product-17.jpg",
-  "/src/assets/products/product-18.jpg",
-  "/src/assets/products/product-19.jpg",
-  "/src/assets/products/product-20.jpg",
-  "/src/assets/products/product-21.jpg",
-  "/src/assets/products/product-22.jpg",
-  "/src/assets/products/product-23.jpg",
-];
+const galleryImages = Object.values(
+  import.meta.glob('/src/assets/products/*.{jpg,jpeg,png,webp}', { eager: true, as: 'url' })
+) as string[];
 
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
@@ -73,6 +52,8 @@ export default function Admin() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [activeTab, setActiveTab] = useState<"products" | "orders">("products");
   const [showImageDropdown, setShowImageDropdown] = useState(false);
+  const [showImagesPicker, setShowImagesPicker] = useState(false);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -81,7 +62,7 @@ export default function Admin() {
     discount_price: "",
     description: "",
     main_image: "",
-    images: "",
+    images: [] as string[],
     featured: false,
     sort_order: 0,
   });
