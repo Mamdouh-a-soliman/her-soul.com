@@ -259,7 +259,7 @@ const ProductDetail = () => {
                 <Link key={relatedProduct.id} to={`/product/${relatedProduct.id}`}>
                   <ProductCard 
                     product={{
-                      id: relatedProduct.id,
+                      id: 0,
                       name: relatedProduct.name,
                       category: relatedProduct.category,
                       price: Number(relatedProduct.price),

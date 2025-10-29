@@ -93,7 +93,7 @@ const Shop = () => {
                 <ProductCard 
                   key={product.id} 
                   product={{
-                    id: product.id,
+                    id: Number(product.id),
                     name: product.name,
                     category: product.category,
                     price: Number(product.price),

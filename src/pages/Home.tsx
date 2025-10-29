@@ -1,35 +1,11 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ProductCard";
+import { products } from "@/data/products";
 import { ArrowRight, Instagram, Facebook } from "lucide-react";
-import { supabase } from "@/lib/supabase";
-
-interface Product {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  discount_price?: number;
-  description: string;
-  main_image: string;
-  images: string[];
-}
 
 const Home = () => {
-  const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
-
-  useEffect(() => {
-    const fetchFeatured = async () => {
-      const { data, error } = await supabase
-        .from("products")
-        .select("*")
-        .eq("featured", true)
-        .order("sort_order", { ascending: true });
-      if (!error && data) setFeaturedProducts(data);
-    };
-    fetchFeatured();
-  }, []);
+  const featuredProducts = products.slice(0, 4);
 
   return (
     <div className="min-h-screen">
@@ -74,18 +50,7 @@ const Home = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {featuredProducts.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={{
-                  id: product.id,
-                  name: product.name,
-                  category: product.category,
-                  price: Number(product.price),
-                  discount_price: product.discount_price ? Number(product.discount_price) : undefined,
-                  images: product.images.length > 0 ? product.images : [product.main_image],
-                  description: product.description,
-                }}
-              />
+              <ProductCard key={product.id} product={product} />
             ))}
           </div>
           <div className="text-center mt-12">
