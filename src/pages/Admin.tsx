@@ -81,7 +81,7 @@ export default function Admin() {
     discount_price: "",
     description: "",
     main_image: "",
-    images: "",
+    images: [] as string[],
     featured: false,
     sort_order: 0,
   });
@@ -135,7 +135,7 @@ export default function Admin() {
       discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
       description: formData.description,
       main_image: formData.main_image,
-      images: formData.images.split(",").map((url) => url.trim()).filter(Boolean),
+      images: formData.images,
       featured: formData.featured,
       sort_order: formData.sort_order,
     };
@@ -188,7 +188,7 @@ export default function Admin() {
       discount_price: product.discount_price?.toString() || "",
       description: product.description,
       main_image: product.main_image,
-      images: product.images.join(", "),
+      images: product.images || [],
       featured: product.featured || false,
       sort_order: product.sort_order || 0,
     });
@@ -203,7 +203,7 @@ export default function Admin() {
       discount_price: "",
       description: "",
       main_image: "",
-      images: "",
+      images: [],
       featured: false,
       sort_order: 0,
     });
@@ -429,19 +429,18 @@ export default function Admin() {
                       <Label htmlFor="images">Additional Images (comma-separated URLs)</Label>
                       <Textarea
                         id="images"
-                        value={formData.images}
-                        onChange={(e) => setFormData({ ...formData, images: e.target.value })}
+                        value={formData.images.join(", ")}
+                        onChange={(e) => setFormData({ ...formData, images: e.target.value.split(",").map(url => url.trim()).filter(Boolean) })}
                         placeholder="Paste URLs separated by commas, or select from gallery above"
                         rows={2}
                       />
-                      {formData.images && (
+                      {formData.images.length > 0 && (
                         <div className="grid grid-cols-4 gap-2 mt-2">
-                          {formData.images.split(",").map((img, idx) => {
-                            const trimmedImg = img.trim();
-                            if (!trimmedImg) return null;
+                          {formData.images.map((img, idx) => {
+                            if (!img) return null;
                             return (
                               <div key={idx} className="relative w-20 h-20 border rounded">
-                                <img src={trimmedImg} alt={`Image ${idx + 1}`} className="w-full h-full object-cover rounded" />
+                                <img src={img} alt={`Image ${idx + 1}`} className="w-full h-full object-cover rounded" />
                               </div>
                             );
                           })}
