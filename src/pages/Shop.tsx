@@ -4,6 +4,15 @@ import { categories } from "@/data/products";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
+// Resolve product asset image paths (supports assets and absolute URLs)
+const imageModules = import.meta.glob("/src/assets/products/*", { eager: true, as: "url" }) as Record<string, string>;
+const resolveImage = (path?: string) => {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("/")) return path;
+  const filename = path.split("/").pop()!;
+  const match = Object.keys(imageModules).find((k) => k.endsWith(`/${filename}`));
+  return match ? imageModules[match] : path;
+};
 interface Product {
   id: string;
   name: string;
@@ -98,7 +107,7 @@ const Shop = () => {
                     category: product.category,
                     price: Number(product.price),
                     discount_price: product.discount_price ? Number(product.discount_price) : undefined,
-                    images: product.images.length > 0 ? product.images : [product.main_image],
+                    images: (product.images && product.images.length > 0 ? product.images : [product.main_image]).map(resolveImage).filter(Boolean) as string[],
                     description: product.description,
                   }} 
                   isRamadan={isRamadanTheme}

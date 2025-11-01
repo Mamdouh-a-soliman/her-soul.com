@@ -41,6 +41,11 @@ export const ProductCard = ({ product, isRamadan = false }: ProductCardProps) =>
           <img
             src={product.images[0]}
             alt={product.name}
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.src = "/placeholder.svg";
+              e.currentTarget.onerror = null;
+            }}
             className={`h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 ${
               isRamadan ? 'rounded-sm' : ''
             }`}
