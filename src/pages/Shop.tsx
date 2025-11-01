@@ -29,7 +29,7 @@ const Shop = () => {
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .order("created_at", { ascending: false });
+      .order("sort_order", { ascending: true });
 
     if (error) {
       console.error("Error fetching products:", error);
@@ -93,7 +93,7 @@ const Shop = () => {
                 <ProductCard 
                   key={product.id} 
                   product={{
-                    id: Number(product.id),
+                    id: product.id,
                     name: product.name,
                     category: product.category,
                     price: Number(product.price),

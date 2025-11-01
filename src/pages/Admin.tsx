@@ -39,30 +39,8 @@ interface Order {
   created_at: string;
 }
 
-const availableImages = [
-  "/src/assets/products/product-1.jpg",
-  "/src/assets/products/product-3.jpg",
-  "/src/assets/products/product-4.jpg",
-  "/src/assets/products/product-5.jpg",
-  "/src/assets/products/product-6.jpg",
-  "/src/assets/products/product-7.jpg",
-  "/src/assets/products/product-8.jpg",
-  "/src/assets/products/product-9.jpg",
-  "/src/assets/products/product-10.jpg",
-  "/src/assets/products/product-11.jpg",
-  "/src/assets/products/product-12.jpg",
-  "/src/assets/products/product-13.jpg",
-  "/src/assets/products/product-14.jpg",
-  "/src/assets/products/product-15.jpg",
-  "/src/assets/products/product-16.jpg",
-  "/src/assets/products/product-17.jpg",
-  "/src/assets/products/product-18.jpg",
-  "/src/assets/products/product-19.jpg",
-  "/src/assets/products/product-20.jpg",
-  "/src/assets/products/product-21.jpg",
-  "/src/assets/products/product-22.jpg",
-  "/src/assets/products/product-23.jpg",
-];
+const galleryModules = import.meta.glob("/src/assets/products/*.{jpg,jpeg,png,webp}", { as: "url", eager: true }) as Record<string, string>;
+const availableImages = Object.values(galleryModules);
 
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
@@ -73,6 +51,8 @@ export default function Admin() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [activeTab, setActiveTab] = useState<"products" | "orders">("products");
   const [showImageDropdown, setShowImageDropdown] = useState(false);
+  const [showImagesDropdown, setShowImagesDropdown] = useState(false);
+  const [dragFromIndex, setDragFromIndex] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -426,26 +406,98 @@ export default function Admin() {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="images">Additional Images (comma-separated URLs)</Label>
-                      <Textarea
-                        id="images"
-                        value={formData.images.join(", ")}
-                        onChange={(e) => setFormData({ ...formData, images: e.target.value.split(",").map(url => url.trim()).filter(Boolean) })}
-                        placeholder="Paste URLs separated by commas, or select from gallery above"
-                        rows={2}
-                      />
-                      {formData.images.length > 0 && (
-                        <div className="grid grid-cols-4 gap-2 mt-2">
-                          {formData.images.map((img, idx) => {
-                            if (!img) return null;
-                            return (
-                              <div key={idx} className="relative w-20 h-20 border rounded">
-                                <img src={img} alt={`Image ${idx + 1}`} className="w-full h-full object-cover rounded" />
+                      <Label>Gallery Images</Label>
+                      <div className="space-y-2">
+                        <div className="flex gap-2 items-center">
+                          <div className="relative flex-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="w-full justify-start"
+                              onClick={() => setShowImagesDropdown(!showImagesDropdown)}
+                            >
+                              Add Image
+                            </Button>
+                            {showImagesDropdown && (
+                              <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto p-2">
+                                <div className="grid grid-cols-3 gap-2">
+                                  {availableImages.map((img, idx) => (
+                                    <button
+                                      key={idx}
+                                      type="button"
+                                      onClick={() => {
+                                        setFormData(prev => ({ ...prev, images: prev.images.includes(img) ? prev.images : [...prev.images, img] }));
+                                      }}
+                                      className="border rounded p-1 hover:border-primary transition"
+                                    >
+                                      <img src={img} alt={`Option ${idx + 1}`} className="w-full h-20 object-cover rounded" />
+                                    </button>
+                                  ))}
+                                </div>
                               </div>
-                            );
-                          })}
+                            )}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById('images-upload')?.click()}
+                          >
+                            Browse
+                          </Button>
+                          <input
+                            id="images-upload"
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              if (files.length) {
+                                files.forEach(file => {
+                                  const reader = new FileReader();
+                                  reader.onloadend = () => {
+                                    const result = reader.result as string;
+                                    setFormData(prev => ({ ...prev, images: [...prev.images, result] }));
+                                  };
+                                  reader.readAsDataURL(file);
+                                });
+                              }
+                            }}
+                          />
                         </div>
-                      )}
+
+                        {formData.images.length > 0 && (
+                          <div className="flex flex-wrap gap-3 mt-2">
+                            {formData.images.map((img, idx) => (
+                              <div
+                                key={idx}
+                                className="relative w-20 h-20 border rounded overflow-hidden"
+                                draggable
+                                onDragStart={() => setDragFromIndex(idx)}
+                                onDragOver={(e) => e.preventDefault()}
+                                onDrop={() => {
+                                  if (dragFromIndex === null || dragFromIndex === idx) return;
+                                  const newImages = [...formData.images];
+                                  const [moved] = newImages.splice(dragFromIndex, 1);
+                                  newImages.splice(idx, 0, moved);
+                                  setFormData(prev => ({ ...prev, images: newImages }));
+                                  setDragFromIndex(null);
+                                }}
+                              >
+                                <img src={img} alt={`Image ${idx + 1}`} className="w-full h-full object-cover" />
+                                <button
+                                  type="button"
+                                  onClick={() => setFormData(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) }))}
+                                  className="absolute top-1 right-1 bg-background/70 border rounded px-1 text-xs"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-xs text-muted-foreground">Tip: Drag images to change their order.</p>
+                      </div>
                     </div>
                     <div className="flex gap-2">
                       <Button type="submit">

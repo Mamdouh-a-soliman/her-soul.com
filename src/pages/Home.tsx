@@ -1,11 +1,37 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ProductCard";
-import { products } from "@/data/products";
 import { ArrowRight, Instagram, Facebook } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const Home = () => {
-  const featuredProducts = products.slice(0, 4);
+  const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("featured", true)
+        .order("sort_order", { ascending: true })
+        .limit(8);
+      if (!error) setFeaturedProducts((data || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        category: p.category,
+        price: Number(p.price),
+        discount_price: p.discount_price ? Number(p.discount_price) : undefined,
+        images: (p.images && p.images.length > 0) ? p.images : [p.main_image],
+        description: p.description,
+      })));
+      setLoading(false);
+    };
+    fetchFeatured();
+  }, []);
+
 
   return (
     <div className="min-h-screen">
