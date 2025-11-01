@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      category_settings: {
+        Row: {
+          background_gradient: string | null
+          category_name: string
+          created_at: string
+          decorative_elements: Json | null
+          frame_color: string | null
+          frame_enabled: boolean | null
+          frame_style: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          background_gradient?: string | null
+          category_name: string
+          created_at?: string
+          decorative_elements?: Json | null
+          frame_color?: string | null
+          frame_enabled?: boolean | null
+          frame_style?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          background_gradient?: string | null
+          category_name?: string
+          created_at?: string
+          decorative_elements?: Json | null
+          frame_color?: string | null
+          frame_enabled?: boolean | null
+          frame_style?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           created_at: string | null

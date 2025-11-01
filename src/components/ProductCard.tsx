@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardFooter } from "./ui/card";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 interface MinimalProduct {
   id: string | number;
@@ -11,31 +13,59 @@ interface MinimalProduct {
   description: string;
 }
 
-interface ProductCardProps {
-  product: MinimalProduct;
-  isRamadan?: boolean;
+interface CategorySetting {
+  frame_enabled: boolean;
+  frame_color: string;
+  frame_style: string;
+  background_gradient: string;
 }
 
-export const ProductCard = ({ product, isRamadan = false }: ProductCardProps) => {
+interface ProductCardProps {
+  product: MinimalProduct;
+}
+
+export const ProductCard = ({ product }: ProductCardProps) => {
+  const [categorySetting, setCategorySetting] = useState<CategorySetting | null>(null);
   const displayPrice = product.discount_price || product.price;
   const hasDiscount = !!product.discount_price;
+
+  useEffect(() => {
+    const fetchCategorySetting = async () => {
+      const { data } = await supabase
+        .from("category_settings")
+        .select("*")
+        .eq("category_name", product.category)
+        .single();
+      
+      if (data) {
+        setCategorySetting(data as CategorySetting);
+      }
+    };
+
+    fetchCategorySetting();
+  }, [product.category]);
+
+  const hasFrame = categorySetting?.frame_enabled;
+  const frameColor = categorySetting?.frame_color || "amber-600";
+  const frameStyle = categorySetting?.frame_style || "double";
+  const bgGradient = categorySetting?.background_gradient || "";
 
   return (
     <Link to={`/product/${String(product.id)}`}>
       <Card className={`group overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
-        isRamadan 
-          ? 'border-4 border-double border-amber-600/40 bg-gradient-to-br from-emerald-950/5 to-amber-950/5 hover:shadow-[0_0_30px_rgba(217,119,6,0.3)]' 
+        hasFrame 
+          ? `border-4 border-${frameStyle} border-${frameColor}/40 bg-gradient-to-br ${bgGradient} hover:shadow-[0_0_30px_rgba(217,119,6,0.3)]` 
           : 'border-border hover:shadow-elegant'
       }`}>
         <div className={`aspect-[3/4] overflow-hidden relative ${
-          isRamadan ? 'bg-gradient-to-br from-emerald-950/10 to-amber-950/10 p-3' : 'bg-muted'
+          hasFrame ? `bg-gradient-to-br ${bgGradient} p-3` : 'bg-muted'
         }`}>
-          {isRamadan && (
-            <div className="absolute inset-0 border-2 border-amber-600/30 rounded-sm pointer-events-none">
-              <div className="absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-amber-600"></div>
-              <div className="absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-amber-600"></div>
-              <div className="absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-amber-600"></div>
-              <div className="absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-amber-600"></div>
+          {hasFrame && (
+            <div className={`absolute inset-0 border-2 border-${frameColor}/30 rounded-sm pointer-events-none`}>
+              <div className={`absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-${frameColor}`}></div>
+              <div className={`absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-${frameColor}`}></div>
+              <div className={`absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-${frameColor}`}></div>
+              <div className={`absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-${frameColor}`}></div>
             </div>
           )}
           <img
@@ -47,7 +77,7 @@ export const ProductCard = ({ product, isRamadan = false }: ProductCardProps) =>
               e.currentTarget.onerror = null;
             }}
             className={`h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 ${
-              isRamadan ? 'rounded-sm' : ''
+              hasFrame ? 'rounded-sm' : ''
             }`}
           />
         </div>

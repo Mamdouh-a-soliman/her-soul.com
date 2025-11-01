@@ -5,6 +5,16 @@ import { ArrowRight, Instagram, Facebook } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
+// Resolve product asset image paths (supports assets and absolute URLs)
+const imageModules = import.meta.glob("/src/assets/products/*", { eager: true, as: "url" }) as Record<string, string>;
+const resolveImage = (path?: string) => {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("/")) return path;
+  const filename = path.split("/").pop()!;
+  const match = Object.keys(imageModules).find((k) => k.endsWith(`/${filename}`));
+  return match ? imageModules[match] : path;
+};
+
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +34,7 @@ const Home = () => {
         category: p.category,
         price: Number(p.price),
         discount_price: p.discount_price ? Number(p.discount_price) : undefined,
-        images: (p.images && p.images.length > 0) ? p.images : [p.main_image],
+        images: ((p.images && p.images.length > 0) ? p.images : [p.main_image]).map(resolveImage).filter(Boolean) as string[],
         description: p.description,
       })));
       setLoading(false);

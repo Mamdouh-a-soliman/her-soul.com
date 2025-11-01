@@ -10,9 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Package } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, Settings } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { CategorySettings } from "@/components/CategorySettings";
+
 
 interface Product {
   id: string;
@@ -49,7 +51,7 @@ export default function Admin() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [activeTab, setActiveTab] = useState<"products" | "orders">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "orders" | "categories">("products");
   const [showImageDropdown, setShowImageDropdown] = useState(false);
   const [showImagesDropdown, setShowImagesDropdown] = useState(false);
   const [dragFromIndex, setDragFromIndex] = useState<number | null>(null);
@@ -235,6 +237,13 @@ export default function Admin() {
               onClick={() => setActiveTab("orders")}
             >
               Orders
+            </Button>
+            <Button
+              variant={activeTab === "categories" ? "default" : "outline"}
+              onClick={() => setActiveTab("categories")}
+            >
+              <Settings className="mr-2 h-4 w-4" />
+              Category Settings
             </Button>
           </div>
         </div>
@@ -638,6 +647,8 @@ export default function Admin() {
             </CardContent>
           </Card>
         )}
+
+        {activeTab === "categories" && <CategorySettings />}
       </div>
     </div>
   );
