@@ -15,10 +15,10 @@ interface CategorySetting {
   id: string;
   category_name: string;
   frame_enabled: boolean;
-  frame_color: string;
-  frame_style: string;
-  background_gradient: string;
-  decorative_elements: unknown;
+  frame_image: string | null;
+  background_image: string | null;
+  background_opacity: number;
+  background_blur: number;
 }
 
 export function CategorySettings() {
@@ -28,10 +28,10 @@ export function CategorySettings() {
   const [formData, setFormData] = useState({
     category_name: "",
     frame_enabled: false,
-    frame_color: "amber-600",
-    frame_style: "double",
-    background_gradient: "",
-    decorative_elements: [],
+    frame_image: "",
+    background_image: "",
+    background_opacity: 1.0,
+    background_blur: 0,
   });
 
   useEffect(() => {
@@ -87,10 +87,10 @@ export function CategorySettings() {
     setFormData({
       category_name: category.category_name,
       frame_enabled: category.frame_enabled,
-      frame_color: category.frame_color,
-      frame_style: category.frame_style,
-      background_gradient: category.background_gradient,
-      decorative_elements: (category.decorative_elements as any[]) || [],
+      frame_image: category.frame_image || "",
+      background_image: category.background_image || "",
+      background_opacity: category.background_opacity,
+      background_blur: category.background_blur,
     });
     setIsDialogOpen(true);
   };
@@ -116,21 +116,13 @@ export function CategorySettings() {
     setFormData({
       category_name: "",
       frame_enabled: false,
-      frame_color: "amber-600",
-      frame_style: "double",
-      background_gradient: "",
-      decorative_elements: [],
+      frame_image: "",
+      background_image: "",
+      background_opacity: 1.0,
+      background_blur: 0,
     });
     setIsDialogOpen(false);
   };
-
-  const frameColorOptions = [
-    "amber-600", "purple-600", "emerald-600", "rose-600", "blue-600", "slate-600"
-  ];
-
-  const frameStyleOptions = [
-    "double", "solid", "dashed", "dotted"
-  ];
 
   return (
     <Card>
@@ -181,44 +173,54 @@ export function CategorySettings() {
               {formData.frame_enabled && (
                 <>
                   <div>
-                    <Label htmlFor="frame_color">Frame Color</Label>
-                    <select
-                      id="frame_color"
-                      value={formData.frame_color}
-                      onChange={(e) => setFormData({ ...formData, frame_color: e.target.value })}
-                      className="w-full border rounded-md p-2 bg-background"
-                    >
-                      {frameColorOptions.map((color) => (
-                        <option key={color} value={color}>{color}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="frame_style">Frame Style</Label>
-                    <select
-                      id="frame_style"
-                      value={formData.frame_style}
-                      onChange={(e) => setFormData({ ...formData, frame_style: e.target.value })}
-                      className="w-full border rounded-md p-2 bg-background"
-                    >
-                      {frameStyleOptions.map((style) => (
-                        <option key={style} value={style}>{style}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="background_gradient">Background Gradient (Tailwind classes)</Label>
+                    <Label htmlFor="frame_image">Frame Image URL</Label>
                     <Input
-                      id="background_gradient"
-                      value={formData.background_gradient}
-                      onChange={(e) => setFormData({ ...formData, background_gradient: e.target.value })}
-                      placeholder="e.g., from-emerald-950/10 to-amber-950/10"
+                      id="frame_image"
+                      value={formData.frame_image}
+                      onChange={(e) => setFormData({ ...formData, frame_image: e.target.value })}
+                      placeholder="URL to PNG frame image (recommended: 800x1200px)"
                     />
                     <p className="text-xs text-muted-foreground mt-1">
-                      Example: "from-emerald-950/10 to-amber-950/10"
+                      Upload a PNG with transparent background. Aspect ratio 2:3 recommended.
                     </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="background_image">Background Image URL</Label>
+                    <Input
+                      id="background_image"
+                      value={formData.background_image}
+                      onChange={(e) => setFormData({ ...formData, background_image: e.target.value })}
+                      placeholder="URL to background image"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="background_opacity">Background Opacity: {formData.background_opacity}</Label>
+                    <input
+                      type="range"
+                      id="background_opacity"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={formData.background_opacity}
+                      onChange={(e) => setFormData({ ...formData, background_opacity: parseFloat(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="background_blur">Background Blur (px): {formData.background_blur}</Label>
+                    <input
+                      type="range"
+                      id="background_blur"
+                      min="0"
+                      max="20"
+                      step="1"
+                      value={formData.background_blur}
+                      onChange={(e) => setFormData({ ...formData, background_blur: parseInt(e.target.value) })}
+                      className="w-full"
+                    />
                   </div>
                 </>
               )}
@@ -241,9 +243,10 @@ export function CategorySettings() {
             <TableRow>
               <TableHead>Category</TableHead>
               <TableHead>Frame Enabled</TableHead>
-              <TableHead>Frame Color</TableHead>
-              <TableHead>Frame Style</TableHead>
+              <TableHead>Frame Image</TableHead>
               <TableHead>Background</TableHead>
+              <TableHead>Opacity</TableHead>
+              <TableHead>Blur</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -252,11 +255,18 @@ export function CategorySettings() {
               <TableRow key={setting.id}>
                 <TableCell className="font-medium">{setting.category_name}</TableCell>
                 <TableCell>{setting.frame_enabled ? "✓" : "✗"}</TableCell>
-                <TableCell>{setting.frame_color}</TableCell>
-                <TableCell>{setting.frame_style}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {setting.background_gradient || "None"}
+                <TableCell className="text-xs truncate max-w-[150px]">
+                  {setting.frame_image ? (
+                    <img src={setting.frame_image} alt="Frame" className="h-8 w-8 object-cover" />
+                  ) : "None"}
                 </TableCell>
+                <TableCell className="text-xs truncate max-w-[150px]">
+                  {setting.background_image ? (
+                    <img src={setting.background_image} alt="BG" className="h-8 w-12 object-cover" />
+                  ) : "None"}
+                </TableCell>
+                <TableCell>{setting.background_opacity}</TableCell>
+                <TableCell>{setting.background_blur}px</TableCell>
                 <TableCell>
                   <div className="flex gap-2">
                     <Button

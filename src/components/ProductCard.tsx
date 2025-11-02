@@ -15,9 +15,10 @@ interface MinimalProduct {
 
 interface CategorySetting {
   frame_enabled: boolean;
-  frame_color: string;
-  frame_style: string;
-  background_gradient: string;
+  frame_image: string | null;
+  background_image: string | null;
+  background_opacity: number;
+  background_blur: number;
 }
 
 interface ProductCardProps {
@@ -46,28 +47,24 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   }, [product.category]);
 
   const hasFrame = categorySetting?.frame_enabled;
-  const frameColor = categorySetting?.frame_color || "amber-600";
-  const frameStyle = categorySetting?.frame_style || "double";
-  const bgGradient = categorySetting?.background_gradient || "";
 
   return (
     <Link to={`/product/${String(product.id)}`}>
-      <Card className={`group overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
-        hasFrame 
-          ? `border-4 border-${frameStyle} border-${frameColor}/40 bg-gradient-to-br ${bgGradient} hover:shadow-[0_0_30px_rgba(217,119,6,0.3)]` 
-          : 'border-border hover:shadow-elegant'
-      }`}>
-        <div className={`aspect-[3/4] overflow-hidden relative ${
-          hasFrame ? `bg-gradient-to-br ${bgGradient} p-3` : 'bg-muted'
-        }`}>
-          {hasFrame && (
-            <div className={`absolute inset-0 border-2 border-${frameColor}/30 rounded-sm pointer-events-none`}>
-              <div className={`absolute top-0 left-0 w-4 h-4 border-l-2 border-t-2 border-${frameColor}`}></div>
-              <div className={`absolute top-0 right-0 w-4 h-4 border-r-2 border-t-2 border-${frameColor}`}></div>
-              <div className={`absolute bottom-0 left-0 w-4 h-4 border-l-2 border-b-2 border-${frameColor}`}></div>
-              <div className={`absolute bottom-0 right-0 w-4 h-4 border-r-2 border-b-2 border-${frameColor}`}></div>
-            </div>
+      <Card className="group overflow-hidden transition-all duration-300 hover:-translate-y-1 border-border hover:shadow-elegant">
+        <div className="aspect-[3/4] overflow-hidden relative bg-muted">
+          {/* Background Image Layer */}
+          {hasFrame && categorySetting?.background_image && (
+            <div 
+              className="absolute inset-0 bg-cover bg-center"
+              style={{
+                backgroundImage: `url(${categorySetting.background_image})`,
+                opacity: categorySetting.background_opacity,
+                filter: `blur(${categorySetting.background_blur}px)`,
+              }}
+            />
           )}
+
+          {/* Product Image */}
           <img
             src={product.images[0]}
             alt={product.name}
@@ -76,10 +73,18 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               e.currentTarget.src = "/placeholder.svg";
               e.currentTarget.onerror = null;
             }}
-            className={`h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 ${
-              hasFrame ? 'rounded-sm' : ''
-            }`}
+            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-10"
           />
+
+          {/* Frame Overlay */}
+          {hasFrame && categorySetting?.frame_image && (
+            <div 
+              className="absolute inset-0 bg-cover bg-center pointer-events-none z-20"
+              style={{
+                backgroundImage: `url(${categorySetting.frame_image})`,
+              }}
+            />
+          )}
         </div>
         <CardContent className="p-4">
           <p className="text-xs text-muted-foreground mb-1">{product.category}</p>
