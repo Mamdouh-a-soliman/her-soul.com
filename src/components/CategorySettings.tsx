@@ -141,13 +141,13 @@ export function CategorySettings() {
               Add Category Setting
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingCategory ? "Edit Category Settings" : "Add Category Settings"}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4 pb-4">
               <div>
                 <Label htmlFor="category_name">Category</Label>
                 <select

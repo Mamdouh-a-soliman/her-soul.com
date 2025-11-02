@@ -4,6 +4,16 @@ import { categories } from "@/data/products";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/lib/supabase";
 
+interface CategorySetting {
+  id: string;
+  category_name: string;
+  frame_enabled: boolean;
+  frame_image: string | null;
+  background_image: string | null;
+  background_opacity: number;
+  background_blur: number;
+}
+
 // Resolve product asset image paths (supports assets and absolute URLs)
 const imageModules = import.meta.glob("/src/assets/products/*", { eager: true, as: "url" }) as Record<string, string>;
 const resolveImage = (path?: string) => {
@@ -28,10 +38,29 @@ const Shop = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [categorySetting, setCategorySetting] = useState<CategorySetting | null>(null);
 
   useEffect(() => {
     fetchProducts();
   }, []);
+
+  useEffect(() => {
+    if (selectedCategory !== "All") {
+      fetchCategorySetting();
+    } else {
+      setCategorySetting(null);
+    }
+  }, [selectedCategory]);
+
+  const fetchCategorySetting = async () => {
+    const { data } = await supabase
+      .from("category_settings")
+      .select("*")
+      .eq("category_name", selectedCategory)
+      .single();
+    
+    setCategorySetting(data);
+  };
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -53,7 +82,18 @@ const Shop = () => {
     : products.filter((product) => product.category === selectedCategory);
 
   return (
-    <div className="min-h-screen py-12">
+    <div className="min-h-screen py-12 relative">
+      {/* Category Background */}
+      {categorySetting?.background_image && (
+        <div
+          className="absolute inset-0 bg-cover bg-center pointer-events-none"
+          style={{
+            backgroundImage: `url(${categorySetting.background_image})`,
+            opacity: categorySetting.background_opacity,
+            filter: `blur(${categorySetting.background_blur}px)`,
+          }}
+        />
+      )}
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-12 relative z-10">
