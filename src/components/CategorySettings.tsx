@@ -8,8 +8,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { categories } from "@/data/products";
+
+const galleryModules = import.meta.glob("/src/assets/products/*.{jpg,jpeg,png,webp}", { as: "url", eager: true }) as Record<string, string>;
+const availableImages = Object.values(galleryModules);
 
 interface CategorySetting {
   id: string;
@@ -25,6 +28,9 @@ export function CategorySettings() {
   const [categorySettings, setCategorySettings] = useState<CategorySetting[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<CategorySetting | null>(null);
+  const [showFrameDropdown, setShowFrameDropdown] = useState(false);
+  const [showBgDropdown, setShowBgDropdown] = useState(false);
+  
   const [formData, setFormData] = useState({
     category_name: "",
     frame_enabled: false,
@@ -173,26 +179,161 @@ export function CategorySettings() {
               {formData.frame_enabled && (
                 <>
                   <div>
-                    <Label htmlFor="frame_image">Frame Image URL</Label>
-                    <Input
-                      id="frame_image"
-                      value={formData.frame_image}
-                      onChange={(e) => setFormData({ ...formData, frame_image: e.target.value })}
-                      placeholder="URL to PNG frame image (recommended: 800x1200px)"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Upload a PNG with transparent background. Aspect ratio 2:3 recommended.
-                    </p>
+                    <Label>Frame Image (PNG with transparent background)</Label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-start"
+                            onClick={() => setShowFrameDropdown(!showFrameDropdown)}
+                          >
+                            {formData.frame_image ? "Change Frame" : "Select from Gallery"}
+                          </Button>
+                          {showFrameDropdown && (
+                            <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                              <div className="grid grid-cols-3 gap-2 p-2">
+                                {availableImages.map((img, idx) => (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => {
+                                      setFormData({ ...formData, frame_image: img });
+                                      setShowFrameDropdown(false);
+                                    }}
+                                    className="border rounded p-1 hover:border-primary transition"
+                                  >
+                                    <img src={img} alt={`Frame ${idx + 1}`} className="w-full h-20 object-cover rounded" />
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById('frame-upload')?.click()}
+                        >
+                          Browse
+                        </Button>
+                        <input
+                          id="frame-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setFormData({ ...formData, frame_image: reader.result as string });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </div>
+                      <Input
+                        placeholder="Or paste image URL"
+                        value={formData.frame_image}
+                        onChange={(e) => setFormData({ ...formData, frame_image: e.target.value })}
+                      />
+                      {formData.frame_image && (
+                        <div className="relative w-32 h-32 border rounded">
+                          <img src={formData.frame_image} alt="Frame" className="w-full h-full object-contain rounded" />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                            onClick={() => setFormData({ ...formData, frame_image: "" })}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div>
-                    <Label htmlFor="background_image">Background Image URL</Label>
-                    <Input
-                      id="background_image"
-                      value={formData.background_image}
-                      onChange={(e) => setFormData({ ...formData, background_image: e.target.value })}
-                      placeholder="URL to background image"
-                    />
+                    <Label>Background Image</Label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <div className="relative flex-1">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="w-full justify-start"
+                            onClick={() => setShowBgDropdown(!showBgDropdown)}
+                          >
+                            {formData.background_image ? "Change Background" : "Select from Gallery"}
+                          </Button>
+                          {showBgDropdown && (
+                            <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                              <div className="grid grid-cols-3 gap-2 p-2">
+                                {availableImages.map((img, idx) => (
+                                  <button
+                                    key={idx}
+                                    type="button"
+                                    onClick={() => {
+                                      setFormData({ ...formData, background_image: img });
+                                      setShowBgDropdown(false);
+                                    }}
+                                    className="border rounded p-1 hover:border-primary transition"
+                                  >
+                                    <img src={img} alt={`BG ${idx + 1}`} className="w-full h-20 object-cover rounded" />
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById('bg-upload')?.click()}
+                        >
+                          Browse
+                        </Button>
+                        <input
+                          id="bg-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setFormData({ ...formData, background_image: reader.result as string });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                      </div>
+                      <Input
+                        placeholder="Or paste image URL"
+                        value={formData.background_image}
+                        onChange={(e) => setFormData({ ...formData, background_image: e.target.value })}
+                      />
+                      {formData.background_image && (
+                        <div className="relative w-32 h-32 border rounded">
+                          <img src={formData.background_image} alt="Background" className="w-full h-full object-cover rounded" />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                            onClick={() => setFormData({ ...formData, background_image: "" })}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div>
