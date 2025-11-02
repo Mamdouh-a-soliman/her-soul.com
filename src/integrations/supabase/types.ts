@@ -50,36 +50,6 @@ export type Database = {
         }
         Relationships: []
       }
-      gallery: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          image_url: string
-          sort_order: number | null
-          title: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url: string
-          sort_order?: number | null
-          title?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string
-          sort_order?: number | null
-          title?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
       orders: {
         Row: {
           created_at: string | null

@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Package, Settings, Image as ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, Settings } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CategorySettings } from "@/components/CategorySettings";
@@ -41,15 +41,6 @@ interface Order {
   created_at: string;
 }
 
-interface GalleryItem {
-  id: string;
-  image_url: string;
-  title: string;
-  description: string;
-  sort_order: number;
-  created_at: string;
-}
-
 const galleryModules = import.meta.glob("/src/assets/products/*.{jpg,jpeg,png,webp}", { as: "url", eager: true }) as Record<string, string>;
 const availableImages = Object.values(galleryModules);
 
@@ -58,12 +49,9 @@ export default function Admin() {
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([]);
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
-  const [isGalleryDialogOpen, setIsGalleryDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  const [editingGalleryItem, setEditingGalleryItem] = useState<GalleryItem | null>(null);
-  const [activeTab, setActiveTab] = useState<"products" | "orders" | "categories" | "gallery">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "orders" | "categories">("products");
   const [showImageDropdown, setShowImageDropdown] = useState(false);
   const [showImagesDropdown, setShowImagesDropdown] = useState(false);
   const [dragFromIndex, setDragFromIndex] = useState<number | null>(null);
@@ -80,13 +68,6 @@ export default function Admin() {
     sort_order: 0,
   });
 
-  const [galleryFormData, setGalleryFormData] = useState({
-    title: "",
-    description: "",
-    image_url: "",
-    sort_order: 0,
-  });
-
   useEffect(() => {
     if (!loading && (!user || !isAdmin)) {
       navigate("/auth");
@@ -97,7 +78,6 @@ export default function Admin() {
     if (isAdmin) {
       fetchProducts();
       fetchOrders();
-      fetchGallery();
     }
   }, [isAdmin]);
 
@@ -124,19 +104,6 @@ export default function Admin() {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       setOrders(data || []);
-    }
-  };
-
-  const fetchGallery = async () => {
-    const { data, error } = await supabase
-      .from("gallery")
-      .select("*")
-      .order("sort_order", { ascending: true });
-
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      setGalleryItems(data || []);
     }
   };
 
@@ -240,77 +207,6 @@ export default function Admin() {
     }
   };
 
-  const handleGallerySubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const galleryData = {
-      title: galleryFormData.title,
-      description: galleryFormData.description,
-      image_url: galleryFormData.image_url,
-      sort_order: galleryFormData.sort_order,
-    };
-
-    if (editingGalleryItem) {
-      const { error } = await supabase
-        .from("gallery")
-        .update(galleryData)
-        .eq("id", editingGalleryItem.id);
-
-      if (error) {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
-      } else {
-        toast({ title: "Success", description: "Gallery item updated successfully" });
-        fetchGallery();
-        resetGalleryForm();
-      }
-    } else {
-      const { error } = await supabase.from("gallery").insert([galleryData]);
-
-      if (error) {
-        toast({ title: "Error", description: error.message, variant: "destructive" });
-      } else {
-        toast({ title: "Success", description: "Gallery item created successfully" });
-        fetchGallery();
-        resetGalleryForm();
-      }
-    }
-  };
-
-  const handleGalleryDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this gallery item?")) return;
-
-    const { error } = await supabase.from("gallery").delete().eq("id", id);
-
-    if (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "Success", description: "Gallery item deleted successfully" });
-      fetchGallery();
-    }
-  };
-
-  const handleGalleryEdit = (item: GalleryItem) => {
-    setEditingGalleryItem(item);
-    setGalleryFormData({
-      title: item.title,
-      description: item.description,
-      image_url: item.image_url,
-      sort_order: item.sort_order,
-    });
-    setIsGalleryDialogOpen(true);
-  };
-
-  const resetGalleryForm = () => {
-    setGalleryFormData({
-      title: "",
-      description: "",
-      image_url: "",
-      sort_order: 0,
-    });
-    setEditingGalleryItem(null);
-    setIsGalleryDialogOpen(false);
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -348,13 +244,6 @@ export default function Admin() {
             >
               <Settings className="mr-2 h-4 w-4" />
               Category Settings
-            </Button>
-            <Button
-              variant={activeTab === "gallery" ? "default" : "outline"}
-              onClick={() => setActiveTab("gallery")}
-            >
-              <ImageIcon className="mr-2 h-4 w-4" />
-              Gallery
             </Button>
           </div>
         </div>
@@ -760,148 +649,6 @@ export default function Admin() {
         )}
 
         {activeTab === "categories" && <CategorySettings />}
-
-        {activeTab === "gallery" && (
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Gallery</CardTitle>
-              <Dialog open={isGalleryDialogOpen} onOpenChange={setIsGalleryDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button onClick={() => resetGalleryForm()}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Gallery Item
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>
-                      {editingGalleryItem ? "Edit Gallery Item" : "Add New Gallery Item"}
-                    </DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleGallerySubmit} className="space-y-4 pr-2">
-                    <div>
-                      <Label htmlFor="gallery-title">Title</Label>
-                      <Input
-                        id="gallery-title"
-                        value={galleryFormData.title}
-                        onChange={(e) => setGalleryFormData({ ...galleryFormData, title: e.target.value })}
-                        placeholder="Optional"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="gallery-description">Description</Label>
-                      <Textarea
-                        id="gallery-description"
-                        value={galleryFormData.description}
-                        onChange={(e) => setGalleryFormData({ ...galleryFormData, description: e.target.value })}
-                        rows={3}
-                        placeholder="Optional"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="gallery-sort">Sort Order</Label>
-                      <Input
-                        id="gallery-sort"
-                        type="number"
-                        value={galleryFormData.sort_order}
-                        onChange={(e) =>
-                          setGalleryFormData({ ...galleryFormData, sort_order: parseInt(e.target.value) || 0 })
-                        }
-                      />
-                    </div>
-                    <div>
-                      <Label>Image</Label>
-                      <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => document.getElementById('gallery-image-upload')?.click()}
-                            className="flex-1"
-                          >
-                            Browse from PC
-                          </Button>
-                          <input
-                            id="gallery-image-upload"
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  setGalleryFormData({ ...galleryFormData, image_url: reader.result as string });
-                                };
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                          />
-                        </div>
-                        <Input
-                          placeholder="Or paste image URL"
-                          value={galleryFormData.image_url}
-                          onChange={(e) => setGalleryFormData({ ...galleryFormData, image_url: e.target.value })}
-                        />
-                        {galleryFormData.image_url && (
-                          <div className="relative w-full h-64 border rounded">
-                            <img src={galleryFormData.image_url} alt="Preview" className="w-full h-full object-contain rounded" />
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button type="submit">
-                        {editingGalleryItem ? "Update" : "Create"} Gallery Item
-                      </Button>
-                      <Button type="button" variant="outline" onClick={resetGalleryForm}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {galleryItems.map((item) => (
-                  <Card key={item.id}>
-                    <CardContent className="p-4">
-                      <div className="relative w-full h-48 mb-3">
-                        <img
-                          src={item.image_url}
-                          alt={item.title}
-                          className="w-full h-full object-cover rounded"
-                        />
-                      </div>
-                      {item.title && <h3 className="font-semibold mb-1">{item.title}</h3>}
-                      {item.description && <p className="text-sm text-muted-foreground mb-2">{item.description}</p>}
-                      <p className="text-xs text-muted-foreground mb-3">Sort order: {item.sort_order}</p>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleGalleryEdit(item)}
-                        >
-                          <Pencil className="h-4 w-4 mr-1" />
-                          Edit
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleGalleryDelete(item.id)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
