@@ -12,7 +12,9 @@ import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { categories } from "@/data/products";
 
 const galleryModules = import.meta.glob("/src/assets/products/*.{jpg,jpeg,png,webp}", { as: "url", eager: true }) as Record<string, string>;
+const frameModules = import.meta.glob("/src/assets/frames/*.{png,webp}", { as: "url", eager: true }) as Record<string, string>;
 const availableImages = Object.values(galleryModules);
+const availableFrames = Object.values(frameModules);
 
 interface CategorySetting {
   id: string;
@@ -194,7 +196,7 @@ export function CategorySettings() {
                           {showFrameDropdown && (
                             <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto">
                               <div className="grid grid-cols-3 gap-2 p-2">
-                                {availableImages.map((img, idx) => (
+                                {availableFrames.map((img, idx) => (
                                   <button
                                     key={idx}
                                     type="button"
@@ -204,7 +206,7 @@ export function CategorySettings() {
                                     }}
                                     className="border rounded p-1 hover:border-primary transition"
                                   >
-                                    <img src={img} alt={`Frame ${idx + 1}`} className="w-full h-20 object-cover rounded" />
+                                    <img src={img} alt={`Frame ${idx + 1}`} className="w-full h-20 object-contain rounded" />
                                   </button>
                                 ))}
                               </div>
