@@ -50,36 +50,39 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <Link to={`/product/${String(product.id)}`}>
-      <Card className="group overflow-hidden transition-all duration-300 hover:-translate-y-1 border-border hover:shadow-elegant">
-        <div className="aspect-[3/4] overflow-hidden relative bg-muted">
-          {/* Background Image Layer */}
-          {hasFrame && categorySetting?.background_image && (
-            <div 
-              className="absolute inset-0 bg-cover bg-center"
-              style={{
-                backgroundImage: `url(${categorySetting.background_image})`,
-                opacity: categorySetting.background_opacity,
-                filter: `blur(${categorySetting.background_blur}px)`,
+      <Card className="group overflow-visible transition-all duration-300 hover:-translate-y-1 border-border hover:shadow-elegant">
+        <div className="aspect-[3/4] relative">
+          {/* Product Image Container */}
+          <div className="absolute inset-0 overflow-hidden bg-muted rounded-t-lg">
+            {/* Background Image Layer */}
+            {hasFrame && categorySetting?.background_image && (
+              <div 
+                className="absolute inset-0 bg-cover bg-center"
+                style={{
+                  backgroundImage: `url(${categorySetting.background_image})`,
+                  opacity: categorySetting.background_opacity,
+                  filter: `blur(${categorySetting.background_blur}px)`,
+                }}
+              />
+            )}
+
+            {/* Product Image */}
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              loading="lazy"
+              onError={(e) => {
+                e.currentTarget.src = "/placeholder.svg";
+                e.currentTarget.onerror = null;
               }}
+              className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-10"
             />
-          )}
+          </div>
 
-          {/* Product Image */}
-          <img
-            src={product.images[0]}
-            alt={product.name}
-            loading="lazy"
-            onError={(e) => {
-              e.currentTarget.src = "/placeholder.svg";
-              e.currentTarget.onerror = null;
-            }}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-10"
-          />
-
-          {/* Frame Overlay */}
+          {/* Frame Overlay - Outside the image */}
           {hasFrame && categorySetting?.frame_image && (
             <div 
-              className="absolute inset-0 bg-cover bg-center pointer-events-none z-20"
+              className="absolute inset-0 bg-cover bg-center pointer-events-none z-20 -m-2"
               style={{
                 backgroundImage: `url(${categorySetting.frame_image})`,
               }}

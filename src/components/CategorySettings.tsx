@@ -337,13 +337,13 @@ export function CategorySettings() {
                   </div>
 
                   <div>
-                    <Label htmlFor="background_opacity">Background Opacity: {formData.background_opacity}</Label>
+                    <Label htmlFor="background_opacity">Background Opacity: {formData.background_opacity.toFixed(2)}</Label>
                     <input
                       type="range"
                       id="background_opacity"
                       min="0"
                       max="1"
-                      step="0.1"
+                      step="0.01"
                       value={formData.background_opacity}
                       onChange={(e) => setFormData({ ...formData, background_opacity: parseFloat(e.target.value) })}
                       className="w-full"
