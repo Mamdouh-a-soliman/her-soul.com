@@ -10,10 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Package, Settings, ImageIcon } from "lucide-react";
+import { Plus, Pencil, Trash2, Package, Settings, ImageIcon, Upload } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CategorySettings } from "@/components/CategorySettings";
+import { MediaManager } from "@/components/MediaManager";
 
 
 interface Product {
@@ -62,7 +63,7 @@ export default function Admin() {
   const [isGalleryDialogOpen, setIsGalleryDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingGalleryItem, setEditingGalleryItem] = useState<GalleryItem | null>(null);
-  const [activeTab, setActiveTab] = useState<"products" | "orders" | "categories" | "gallery">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "orders" | "categories" | "gallery" | "media">("products");
   const [showImageDropdown, setShowImageDropdown] = useState(false);
   const [showImagesDropdown, setShowImagesDropdown] = useState(false);
   const [dragFromIndex, setDragFromIndex] = useState<number | null>(null);
@@ -354,6 +355,13 @@ export default function Admin() {
             >
               <ImageIcon className="mr-2 h-4 w-4" />
               Gallery
+            </Button>
+            <Button
+              variant={activeTab === "media" ? "default" : "outline"}
+              onClick={() => setActiveTab("media")}
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Media Library
             </Button>
           </div>
         </div>
@@ -759,6 +767,8 @@ export default function Admin() {
         )}
 
         {activeTab === "categories" && <CategorySettings />}
+
+        {activeTab === "media" && <MediaManager />}
 
         {activeTab === "gallery" && (
           <Card>
