@@ -82,9 +82,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           {/* Frame Overlay - Around the image */}
           {hasFrame && categorySetting?.frame_image && (
             <div 
-              className="absolute inset-0 bg-contain bg-center bg-no-repeat pointer-events-none z-20"
+              className="absolute inset-0 bg-center bg-no-repeat pointer-events-none z-20"
               style={{
                 backgroundImage: `url(${categorySetting.frame_image})`,
+                backgroundSize: '100% 100%',
               }}
             />
           )}
