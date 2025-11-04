@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { CategorySettings } from "@/components/CategorySettings";
 import { MediaManager } from "@/components/MediaManager";
+import { MediaPicker } from "@/components/MediaPicker";
 
 
 interface Product {
@@ -43,8 +44,6 @@ interface Order {
 }
 
 
-const galleryModules = import.meta.glob("/src/assets/products/*.{jpg,jpeg,png,webp}", { as: "url", eager: true }) as Record<string, string>;
-const availableImages = Object.values(galleryModules);
 
 export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
@@ -54,8 +53,8 @@ export default function Admin() {
   const [isProductDialogOpen, setIsProductDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [activeTab, setActiveTab] = useState<"products" | "orders" | "categories" | "media">("products");
-  const [showImageDropdown, setShowImageDropdown] = useState(false);
-  const [showImagesDropdown, setShowImagesDropdown] = useState(false);
+  const [showMainImagePicker, setShowMainImagePicker] = useState(false);
+  const [showGalleryImagePicker, setShowGalleryImagePicker] = useState(false);
   const [dragFromIndex, setDragFromIndex] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
@@ -360,65 +359,14 @@ export default function Admin() {
                     <div>
                       <Label>Main Image</Label>
                       <div className="space-y-2">
-                        <div className="flex gap-2">
-                          <div className="relative flex-1">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="w-full justify-start"
-                              onClick={() => setShowImageDropdown(!showImageDropdown)}
-                            >
-                              {formData.main_image ? "Change Image" : "Select from Gallery"}
-                            </Button>
-                            {showImageDropdown && (
-                              <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                                <div className="grid grid-cols-3 gap-2 p-2">
-                                  {availableImages.map((img, idx) => (
-                                    <button
-                                      key={idx}
-                                      type="button"
-                                      onClick={() => {
-                                        setFormData({ ...formData, main_image: img });
-                                        setShowImageDropdown(false);
-                                      }}
-                                      className="border rounded p-1 hover:border-primary transition"
-                                    >
-                                      <img src={img} alt={`Option ${idx + 1}`} className="w-full h-20 object-cover rounded" />
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => document.getElementById('image-upload')?.click()}
-                          >
-                            Browse
-                          </Button>
-                          <input
-                            id="image-upload"
-                            type="file"
-                            accept="image/*"
-                            className="hidden"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                const reader = new FileReader();
-                                reader.onloadend = () => {
-                                  setFormData({ ...formData, main_image: reader.result as string });
-                                };
-                                reader.readAsDataURL(file);
-                              }
-                            }}
-                          />
-                        </div>
-                        <Input
-                          placeholder="Or paste image URL"
-                          value={formData.main_image}
-                          onChange={(e) => setFormData({ ...formData, main_image: e.target.value })}
-                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => setShowMainImagePicker(true)}
+                        >
+                          {formData.main_image ? "Change Image" : "Select from Media Library"}
+                        </Button>
                         {formData.main_image && (
                           <div className="relative w-32 h-32 border rounded">
                             <img src={formData.main_image} alt="Main" className="w-full h-full object-cover rounded" />
@@ -429,63 +377,14 @@ export default function Admin() {
                     <div>
                       <Label>Gallery Images</Label>
                       <div className="space-y-2">
-                        <div className="flex gap-2 items-center">
-                          <div className="relative flex-1">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="w-full justify-start"
-                              onClick={() => setShowImagesDropdown(!showImagesDropdown)}
-                            >
-                              Add Image
-                            </Button>
-                            {showImagesDropdown && (
-                              <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-y-auto p-2">
-                                <div className="grid grid-cols-3 gap-2">
-                                  {availableImages.map((img, idx) => (
-                                    <button
-                                      key={idx}
-                                      type="button"
-                                      onClick={() => {
-                                        setFormData(prev => ({ ...prev, images: prev.images.includes(img) ? prev.images : [...prev.images, img] }));
-                                      }}
-                                      className="border rounded p-1 hover:border-primary transition"
-                                    >
-                                      <img src={img} alt={`Option ${idx + 1}`} className="w-full h-20 object-cover rounded" />
-                                    </button>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => document.getElementById('images-upload')?.click()}
-                          >
-                            Browse
-                          </Button>
-                          <input
-                            id="images-upload"
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={(e) => {
-                              const files = Array.from(e.target.files || []);
-                              if (files.length) {
-                                files.forEach(file => {
-                                  const reader = new FileReader();
-                                  reader.onloadend = () => {
-                                    const result = reader.result as string;
-                                    setFormData(prev => ({ ...prev, images: [...prev.images, result] }));
-                                  };
-                                  reader.readAsDataURL(file);
-                                });
-                              }
-                            }}
-                          />
-                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="w-full"
+                          onClick={() => setShowGalleryImagePicker(true)}
+                        >
+                          Add Images from Media Library
+                        </Button>
 
                         {formData.images.length > 0 && (
                           <div className="flex flex-wrap gap-3 mt-2">
@@ -664,6 +563,20 @@ export default function Admin() {
 
         {activeTab === "media" && <MediaManager />}
       </div>
+
+      <MediaPicker
+        open={showMainImagePicker}
+        onOpenChange={setShowMainImagePicker}
+        onSelect={(url) => setFormData({ ...formData, main_image: url })}
+      />
+
+      <MediaPicker
+        open={showGalleryImagePicker}
+        onOpenChange={setShowGalleryImagePicker}
+        onSelect={(url) => setFormData(prev => ({ ...prev, images: [...prev.images, url] }))}
+        multiple={true}
+        selectedUrls={formData.images}
+      />
     </div>
   );
 }
