@@ -57,7 +57,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             {/* Background Image Layer */}
             {hasFrame && categorySetting?.background_image && (
               <div 
-                className="absolute inset-0 bg-cover bg-center rounded-t-lg"
+                className="absolute inset-0 bg-cover bg-center"
                 style={{
                   backgroundImage: `url(${categorySetting.background_image})`,
                   opacity: categorySetting.background_opacity,
@@ -79,10 +79,10 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             />
           </div>
 
-          {/* Frame Overlay - Around the image */}
+          {/* Frame Overlay - Outside the image */}
           {hasFrame && categorySetting?.frame_image && (
             <div 
-              className="absolute inset-0 bg-contain bg-center bg-no-repeat pointer-events-none z-20"
+              className="absolute inset-0 bg-cover bg-center pointer-events-none z-20 -m-2"
               style={{
                 backgroundImage: `url(${categorySetting.frame_image})`,
               }}
