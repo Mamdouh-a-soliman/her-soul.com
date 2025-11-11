@@ -8,9 +8,8 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand */}
           <div>
-            <div className="flex flex-col items-start leading-none gap-0 mb-4">
-              <span className="text-xs font-brand tracking-wider text-foreground uppercase">HER</span>
-              <span className="text-3xl font-brand text-foreground uppercase">SOUL</span>
+            <div className="flex items-center leading-none mb-4">
+              <span className="text-3xl font-brand text-foreground tracking-wide">Soulista</span>
             </div>
             <p className="text-sm text-muted-foreground">
               Modern women's casual wear that combines elegance with comfort.

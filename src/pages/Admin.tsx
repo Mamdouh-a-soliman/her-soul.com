@@ -109,6 +109,22 @@ export default function Admin() {
     }
   };
 
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm("Are you sure you want to delete this order?")) return;
+
+    const { error } = await supabase
+      .from("orders")
+      .delete()
+      .eq("id", orderId);
+
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Success", description: "Order deleted successfully" });
+      fetchOrders();
+    }
+  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -550,6 +566,16 @@ export default function Admin() {
                             </div>
                           ))}
                         </div>
+                      </div>
+                      <div className="mt-4 flex justify-end">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteOrder(order.id)}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Order
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
